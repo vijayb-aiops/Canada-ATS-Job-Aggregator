@@ -8,14 +8,28 @@ export const greenhouseParser: ATSParser = {
   search: async (options: ScraperOptions): Promise<JobResult[]> => {
     const results: JobResult[] = [];
     const companies = companiesConfig.greenhouse;
+    const baseUrls = [
+      'https://job-boards.greenhouse.io',
+      'https://boards.greenhouse.io'
+    ];
     
     for (const company of companies) {
       try {
-        // Greenhouse often has a public board API or HTML page
-        // Example: https://boards.greenhouse.io/wealthsimple
-        const url = `https://boards.greenhouse.io/${company.toLowerCase().replace(/\s+/g, '')}`;
-        const { data } = await axios.get(url, { timeout: 10000 });
-        const $ = cheerio.load(data);
+        let html = '';
+        for (const baseUrl of baseUrls) {
+          const url = `${baseUrl}/${company.toLowerCase().replace(/\s+/g, '')}`;
+          try {
+            const { data } = await axios.get(url, { timeout: 10000 });
+            html = data;
+            break;
+          } catch (error) {
+            continue;
+          }
+        }
+        if (!html) {
+          throw new Error(`No Greenhouse board found for ${company}`);
+        }
+        const $ = cheerio.load(html);
         
         $('.opening').each((_, el) => {
           const position = $(el).find('a').text().trim();
