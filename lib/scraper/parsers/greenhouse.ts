@@ -1,14 +1,13 @@
 import axios from 'axios';
 import * as cheerio from 'cheerio';
+import companiesConfig from '@/data/ats-companies.json';
 import { ATSParser, JobResult, ScraperOptions } from '../types';
 
 export const greenhouseParser: ATSParser = {
   name: 'Greenhouse',
   search: async (options: ScraperOptions): Promise<JobResult[]> => {
     const results: JobResult[] = [];
-    // In a real scenario, we'd have a list of company IDs or search a directory
-    // For this demo, we'll simulate the parsing logic for a few known Canadian tech companies
-    const companies = ['Wealthsimple', 'Shopify', '1Password']; 
+    const companies = companiesConfig.greenhouse;
     
     for (const company of companies) {
       try {

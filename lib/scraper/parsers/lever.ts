@@ -1,11 +1,12 @@
 import axios from 'axios';
+import companiesConfig from '@/data/ats-companies.json';
 import { ATSParser, JobResult, ScraperOptions } from '../types';
 
 export const leverParser: ATSParser = {
   name: 'Lever',
   search: async (options: ScraperOptions): Promise<JobResult[]> => {
     const results: JobResult[] = [];
-    const companies = ['Lattice', 'Figma', 'Coinbase']; // Companies with Canadian presence
+    const companies = companiesConfig.lever;
 
     for (const company of companies) {
       try {
