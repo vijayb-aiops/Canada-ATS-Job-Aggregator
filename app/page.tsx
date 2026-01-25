@@ -13,6 +13,8 @@ import {
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { startScan } from '@/app/actions/scan';
+import { exportScanToExcel } from '@/app/actions/export';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,6 +37,8 @@ export default function Home() {
   const [progress, setProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
   const [resultsCount, setResultsCount] = useState(0);
+  const [scanId, setScanId] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const toggleAts = (ats: string) => {
     setSelectedAts(prev => 
@@ -48,26 +52,57 @@ export default function Home() {
     );
   };
 
-  const handleRunScan = () => {
+  const handleRunScan = async () => {
     if (selectedAts.length === 0 || selectedRoles.length === 0) return;
     
     setIsScanning(true);
     setScanComplete(false);
-    setProgress(0);
+    setProgress(10);
     
-    // Simulate progress for UI demonstration
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsScanning(false);
-          setScanComplete(true);
-          setResultsCount(Math.floor(Math.random() * 50) + 10);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 200);
+    try {
+      const result = await startScan(selectedAts, selectedRoles);
+      setProgress(100);
+      setResultsCount(result.count);
+      setScanId(result.scanId);
+      setScanComplete(true);
+    } catch (error) {
+      console.error('Scan failed:', error);
+      alert('Scan failed. Please try again.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    if (!scanId) return;
+    
+    setIsExporting(true);
+    try {
+      const base64 = await exportScanToExcel(scanId);
+      
+      // Create a download link on the client
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `canada-jobs-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to generate Excel file.');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -204,13 +239,22 @@ export default function Home() {
                   </p>
                   <div className="flex flex-col gap-3">
                     <button
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-200"
+                      onClick={handleDownload}
+                      disabled={isExporting}
+                      className="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-300 text-white font-semibold py-3 px-6 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-200"
                     >
-                      <Download className="w-5 h-5" />
-                      Download Excel (.xlsx)
+                      {isExporting ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Download className="w-5 h-5" />
+                      )}
+                      {isExporting ? 'Generating...' : 'Download Excel (.xlsx)'}
                     </button>
                     <button
-                      onClick={() => setScanComplete(false)}
+                      onClick={() => {
+                        setScanComplete(false);
+                        setScanId(null);
+                      }}
                       className="text-sm text-slate-500 hover:text-slate-700 font-medium"
                     >
                       Start New Scan
