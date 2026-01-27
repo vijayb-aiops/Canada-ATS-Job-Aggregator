@@ -27,7 +27,9 @@ const ATS_SYSTEMS = [
 
 const JOB_ROLES = [
   'AI Engineer', 'Data Scientist', 'ML Engineer', 'GenAI Engineer',
-  'MLOps / LLMOps', 'Python Developer', 'NLP Engineer', 'Computer Vision Engineer'
+  'MLOps / LLMOps', 'Python Developer', 'Devops Engineer',
+  'Site Reliability Engineer', 'Cloud Engineer', 'Machine Learning Engineer',
+  'Applied AI Engineer', 'Applied ML Engineer', 'Software Engineer'
 ];
 
 export default function Home() {
