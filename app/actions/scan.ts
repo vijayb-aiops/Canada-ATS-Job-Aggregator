@@ -3,7 +3,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { runScraper } from '@/lib/scraper';
 
-export async function startScan(selectedAts: string[], selectedRoles: string[]) {
+export async function startScan(
+  selectedAts: string[],
+  selectedRoles: string[],
+  selectedCities: string[],
+  selectedJobTypes: string[]
+) {
   const supabase = await createClient();
 
   // 1. Create scan record
@@ -21,7 +26,7 @@ export async function startScan(selectedAts: string[], selectedRoles: string[]) 
 
   try {
     // 2. Run scraper
-    const results = await runScraper(selectedAts, selectedRoles);
+    const results = await runScraper(selectedAts, selectedRoles, selectedCities, selectedJobTypes);
 
     // 3. Save jobs
     if (results.length > 0) {

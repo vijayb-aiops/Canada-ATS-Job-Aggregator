@@ -41,7 +41,7 @@ export const greenhouseParser: ATSParser = {
             const position = $(el).find('a').text().trim();
             const link = 'https://boards.greenhouse.io' + $(el).find('a').attr('href');
             const location = $(el).find('.location').text().trim();
-            if (matchesGreenhouseFilters(position, location, options)) {
+            if (matchesGreenhouseFilters(position, location, 'Full-time', options)) {
               results.push({
                 ats_system: 'Greenhouse',
                 company,
@@ -65,18 +65,36 @@ export const greenhouseParser: ATSParser = {
   }
 };
 
-function matchesGreenhouseFilters(position: string, location: string, options: ScraperOptions): boolean {
+function matchesGreenhouseFilters(
+  position: string,
+  location: string,
+  jobType: string,
+  options: ScraperOptions
+): boolean {
   const locationLower = location.toLowerCase();
-  const isCanada = locationLower.includes('canada') ||
-    locationLower.includes('toronto') ||
-    locationLower.includes('vancouver') ||
-    locationLower.includes('remote');
+  const canadaHints = [
+    'canada',
+    'toronto',
+    'vancouver',
+    'waterloo',
+    'calgary',
+    'ottawa',
+    'montreal',
+    'london',
+    'oakville',
+    'mississauga',
+    'remote'
+  ];
+  const isCanada = canadaHints.some(hint => locationLower.includes(hint));
 
   const matchesRole = options.roles.some(role =>
     position.toLowerCase().includes(role.toLowerCase())
   );
 
-  return isCanada && matchesRole;
+  const matchesCity = matchesCityFilter(locationLower, options.cities ?? []);
+  const matchesJobType = matchesJobTypeFilter(jobType, locationLower, options.jobTypes ?? []);
+
+  return isCanada && matchesRole && matchesCity && matchesJobType;
 }
 
 function filterGreenhouseJobs(jobs: any[], company: string, options: ScraperOptions): JobResult[] {
@@ -86,7 +104,7 @@ function filterGreenhouseJobs(jobs: any[], company: string, options: ScraperOpti
     const location = job?.location?.name ?? '';
     const jobType = job?.metadata?.find((m: any) => m?.name === 'Employment Type')?.value ?? 'Full-time';
 
-    if (position && link && matchesGreenhouseFilters(position, location, options)) {
+    if (position && link && matchesGreenhouseFilters(position, location, jobType, options)) {
       acc.push({
         ats_system: 'Greenhouse',
         company,
@@ -98,4 +116,36 @@ function filterGreenhouseJobs(jobs: any[], company: string, options: ScraperOpti
     }
     return acc;
   }, []);
+}
+
+function matchesCityFilter(locationLower: string, cities: string[]): boolean {
+  if (cities.length === 0) return true;
+  return cities.some(city => locationLower.includes(city.toLowerCase()));
+}
+
+function matchesJobTypeFilter(jobType: string, locationLower: string, selectedJobTypes: string[]): boolean {
+  if (selectedJobTypes.length === 0) return true;
+
+  const jobTypeLower = jobType.toLowerCase();
+  const isRemote = jobTypeLower.includes('remote') || locationLower.includes('remote');
+  const isFullTime = jobTypeLower.includes('full') || jobTypeLower.includes('permanent');
+  const isContract = jobTypeLower.includes('contract');
+  const isPartTime = jobTypeLower.includes('part');
+
+  return selectedJobTypes.some(type => {
+    switch (type) {
+      case 'Full Time':
+        return isFullTime;
+      case 'Contract':
+        return isContract;
+      case 'Fulltime-Remote':
+        return isFullTime && isRemote;
+      case 'Contract-Remote':
+        return isContract && isRemote;
+      case 'Part-time':
+        return isPartTime;
+      default:
+        return false;
+    }
+  });
 }

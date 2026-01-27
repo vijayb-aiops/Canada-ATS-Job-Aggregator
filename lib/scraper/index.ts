@@ -8,9 +8,19 @@ const PARSERS: Record<string, ATSParser> = {
   // Other parsers would be added here
 };
 
-export async function runScraper(selectedAts: string[], roles: string[]): Promise<JobResult[]> {
+export async function runScraper(
+  selectedAts: string[],
+  roles: string[],
+  cities: string[],
+  jobTypes: string[]
+): Promise<JobResult[]> {
   const allResults: JobResult[] = [];
-  const options: ScraperOptions = { roles, countries: ['Canada'] };
+  const options: ScraperOptions = {
+    roles,
+    countries: ['Canada'],
+    cities,
+    jobTypes
+  };
 
   for (const atsName of selectedAts) {
     const parser = PARSERS[atsName];

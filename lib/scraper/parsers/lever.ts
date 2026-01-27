@@ -21,16 +21,30 @@ export const leverParser: ATSParser = {
             const link = post.hostedUrl;
             const jobType = post.categories?.commitment || 'Full-time';
 
-            const isCanada = location.toLowerCase().includes('canada') || 
-                             location.toLowerCase().includes('toronto') || 
-                             location.toLowerCase().includes('vancouver') ||
-                             location.toLowerCase().includes('remote');
-
+            const locationLower = location.toLowerCase();
+            const canadaHints = [
+              'canada',
+              'toronto',
+              'vancouver',
+              'waterloo',
+              'calgary',
+              'ottawa',
+              'montreal',
+              'london',
+              'oakville',
+              'mississauga',
+              'remote'
+            ];
+            const isCanada = canadaHints.some(hint => locationLower.includes(hint));
+          
             const matchesRole = options.roles.some(role => 
               position.toLowerCase().includes(role.toLowerCase())
             );
 
-            if (isCanada && matchesRole) {
+            const matchesCity = matchesCityFilter(locationLower, options.cities ?? []);
+            const matchesJobType = matchesJobTypeFilter(jobType, locationLower, options.jobTypes ?? []);
+
+            if (isCanada && matchesRole && matchesCity && matchesJobType) {
               results.push({
                 ats_system: 'Lever',
                 company,
@@ -50,3 +64,35 @@ export const leverParser: ATSParser = {
     return results;
   }
 };
+
+function matchesCityFilter(locationLower: string, cities: string[]): boolean {
+  if (cities.length === 0) return true;
+  return cities.some(city => locationLower.includes(city.toLowerCase()));
+}
+
+function matchesJobTypeFilter(jobType: string, locationLower: string, selectedJobTypes: string[]): boolean {
+  if (selectedJobTypes.length === 0) return true;
+
+  const jobTypeLower = jobType.toLowerCase();
+  const isRemote = jobTypeLower.includes('remote') || locationLower.includes('remote');
+  const isFullTime = jobTypeLower.includes('full') || jobTypeLower.includes('permanent');
+  const isContract = jobTypeLower.includes('contract');
+  const isPartTime = jobTypeLower.includes('part');
+
+  return selectedJobTypes.some(type => {
+    switch (type) {
+      case 'Full Time':
+        return isFullTime;
+      case 'Contract':
+        return isContract;
+      case 'Fulltime-Remote':
+        return isFullTime && isRemote;
+      case 'Contract-Remote':
+        return isContract && isRemote;
+      case 'Part-time':
+        return isPartTime;
+      default:
+        return false;
+    }
+  });
+}
