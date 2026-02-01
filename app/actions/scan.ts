@@ -7,7 +7,8 @@ export async function startScan(
   selectedAts: string[],
   selectedRoles: string[],
   selectedCities: string[],
-  selectedJobTypes: string[]
+  selectedJobTypes: string[],
+  selectedCountries: string[]
 ) {
   const supabase = await createClient();
 
@@ -26,7 +27,13 @@ export async function startScan(
 
   try {
     // 2. Run scraper
-    const results = await runScraper(selectedAts, selectedRoles, selectedCities, selectedJobTypes);
+    const results = await runScraper(
+      selectedAts,
+      selectedRoles,
+      selectedCities,
+      selectedJobTypes,
+      selectedCountries
+    );
 
     // 3. Save jobs
     if (results.length > 0) {

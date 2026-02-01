@@ -12,12 +12,13 @@ export async function runScraper(
   selectedAts: string[],
   roles: string[],
   cities: string[],
-  jobTypes: string[]
+  jobTypes: string[],
+  countries: string[]
 ): Promise<JobResult[]> {
   const allResults: JobResult[] = [];
   const options: ScraperOptions = {
     roles,
-    countries: ['Canada'],
+    countries,
     cities,
     jobTypes
   };

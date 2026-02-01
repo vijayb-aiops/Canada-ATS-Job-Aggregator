@@ -38,18 +38,23 @@ const JOB_ROLES = [
 
 const CITY_FILTERS = [
   'Waterloo', 'Toronto', 'Vancouver', 'Calgary', 'Ottawa',
-  'Montreal', 'London', 'Oakville', 'Mississauga'
+  'Montreal', 'London', 'Oakville', 'Mississauga',
+  'Cambridge', 'Winnipeg', 'Kitchener', 'Brampton', 'Edmonton',
+  'Markham', 'Hamilton', 'Halifax', 'Saskatoon'
 ];
 
 const JOB_TYPE_FILTERS = [
-  'Full Time', 'Contract', 'Fulltime-Remote', 'Contract-Remote', 'Part-time'
+  'Full Time', 'Contract', 'Fulltime-Remote', 'Contract-Remote', 'Part-time', 'Remote'
 ];
+
+const COUNTRY_FILTERS = ['Canada', 'USA'];
 
 export default function Home() {
   const [selectedAts, setSelectedAts] = useState<string[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedJobTypes, setSelectedJobTypes] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>(['Canada']);
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
   const [scanComplete, setScanComplete] = useState(false);
@@ -81,6 +86,12 @@ export default function Home() {
     );
   };
 
+  const toggleCountry = (country: string) => {
+    setSelectedCountries(prev =>
+      prev.includes(country) ? prev.filter(c => c !== country) : [...prev, country]
+    );
+  };
+
   const handleRunScan = async () => {
     if (selectedAts.length === 0 || selectedRoles.length === 0) return;
     
@@ -89,7 +100,13 @@ export default function Home() {
     setProgress(10);
     
     try {
-      const result = await startScan(selectedAts, selectedRoles, selectedCities, selectedJobTypes);
+      const result = await startScan(
+        selectedAts,
+        selectedRoles,
+        selectedCities,
+        selectedJobTypes,
+        selectedCountries
+      );
       setProgress(100);
       setResultsCount(result.count);
       setScanId(result.scanId);
@@ -314,6 +331,30 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <section className="bg-slate-900/70 p-6 rounded-xl border border-slate-800 shadow-lg shadow-slate-950/50">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400"></div>
+                  <h2 className="font-semibold">Countries</h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {COUNTRY_FILTERS.map(country => (
+                    <button
+                      key={country}
+                      onClick={() => toggleCountry(country)}
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium transition-all border",
+                        selectedCountries.includes(country)
+                          ? "bg-emerald-500/20 border-emerald-400/60 text-emerald-200"
+                          : "bg-slate-950/60 border-slate-700 text-slate-300 hover:border-slate-500"
+                      )}
+                    >
+                      {country}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500 mt-3">Leave empty to include all countries.</p>
+              </section>
+
               <section className="bg-slate-900/70 p-6 rounded-xl border border-slate-800 shadow-lg shadow-slate-950/50">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 rounded-full bg-cyan-400"></div>

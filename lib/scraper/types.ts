@@ -9,7 +9,7 @@ export interface JobResult {
 
 export interface ScraperOptions {
   roles: string[];
-  countries: string[]; // Always ['Canada'] for now
+  countries: string[];
   cities?: string[];
   jobTypes?: string[];
 }

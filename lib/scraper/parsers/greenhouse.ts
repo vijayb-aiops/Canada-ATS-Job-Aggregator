@@ -72,27 +72,14 @@ function matchesGreenhouseFilters(
   options: ScraperOptions
 ): boolean {
   const locationLower = location.toLowerCase();
-  const canadaHints = [
-    'canada',
-    'toronto',
-    'vancouver',
-    'waterloo',
-    'calgary',
-    'ottawa',
-    'montreal',
-    'london',
-    'oakville',
-    'mississauga',
-    'remote'
-  ];
-  const isCanada = canadaHints.some(hint => locationLower.includes(hint));
+  const matchesCountry = matchesCountryFilter(locationLower, options.countries);
 
   const matchesRole = matchesRoleFilter(position, options.roles);
 
   const matchesCity = matchesCityFilter(locationLower, options.cities ?? []);
   const matchesJobType = matchesJobTypeFilter(jobType, locationLower, options.jobTypes ?? []);
 
-  return isCanada && matchesRole && matchesCity && matchesJobType;
+  return matchesCountry && matchesRole && matchesCity && matchesJobType;
 }
 
 function filterGreenhouseJobs(jobs: any[], company: string, options: ScraperOptions): JobResult[] {
@@ -134,6 +121,52 @@ function matchesCityFilter(locationLower: string, cities: string[]): boolean {
   return cities.some(city => locationLower.includes(city.toLowerCase()));
 }
 
+function matchesCountryFilter(locationLower: string, countries: string[]): boolean {
+  if (countries.length === 0) return true;
+  const countryHints: Record<string, string[]> = {
+    Canada: [
+      'canada',
+      'toronto',
+      'vancouver',
+      'waterloo',
+      'calgary',
+      'ottawa',
+      'montreal',
+      'london',
+      'oakville',
+      'mississauga',
+      'cambridge',
+      'winnipeg',
+      'kitchener',
+      'brampton',
+      'edmonton',
+      'markham',
+      'hamilton',
+      'halifax',
+      'saskatoon'
+    ],
+    USA: [
+      'united states',
+      'usa',
+      'us ',
+      'new york',
+      'san francisco',
+      'seattle',
+      'austin',
+      'boston',
+      'chicago',
+      'los angeles',
+      'remote - us',
+      'remote, us'
+    ]
+  };
+
+  return countries.some(country => {
+    const hints = countryHints[country] ?? [];
+    return hints.some(hint => locationLower.includes(hint));
+  });
+}
+
 function matchesJobTypeFilter(jobType: string, locationLower: string, selectedJobTypes: string[]): boolean {
   if (selectedJobTypes.length === 0) return true;
 
@@ -155,6 +188,8 @@ function matchesJobTypeFilter(jobType: string, locationLower: string, selectedJo
         return isContract && isRemote;
       case 'Part-time':
         return isPartTime;
+      case 'Remote':
+        return isRemote;
       default:
         return false;
     }
