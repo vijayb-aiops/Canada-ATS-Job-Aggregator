@@ -70,7 +70,9 @@ function matchesRoleFilter(position: string, roles: string[]): boolean {
       .toLowerCase()
       .split(/[^a-z0-9]+/)
       .filter(token => token.length >= 2);
-    return tokens.some(token => title.includes(token));
+    if (tokens.length === 0) return false;
+    const matchCount = tokens.filter(token => title.includes(token)).length;
+    return matchCount >= Math.min(2, tokens.length);
   });
 }
 
