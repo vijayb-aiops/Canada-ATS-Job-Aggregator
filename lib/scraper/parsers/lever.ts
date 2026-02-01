@@ -37,9 +37,7 @@ export const leverParser: ATSParser = {
             ];
             const isCanada = canadaHints.some(hint => locationLower.includes(hint));
           
-            const matchesRole = options.roles.some(role => 
-              position.toLowerCase().includes(role.toLowerCase())
-            );
+            const matchesRole = matchesRoleFilter(position, options.roles);
 
             const matchesCity = matchesCityFilter(locationLower, options.cities ?? []);
             const matchesJobType = matchesJobTypeFilter(jobType, locationLower, options.jobTypes ?? []);
@@ -64,6 +62,17 @@ export const leverParser: ATSParser = {
     return results;
   }
 };
+
+function matchesRoleFilter(position: string, roles: string[]): boolean {
+  const title = position.toLowerCase();
+  return roles.some(role => {
+    const tokens = role
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(token => token.length >= 2);
+    return tokens.some(token => title.includes(token));
+  });
+}
 
 function matchesCityFilter(locationLower: string, cities: string[]): boolean {
   if (cities.length === 0) return true;

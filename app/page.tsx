@@ -29,7 +29,11 @@ const JOB_ROLES = [
   'AI Engineer', 'AI Developer', 'Data Scientist', 'ML Engineer', 'GenAI Engineer',
   'MLOps / LLMOps', 'Python Developer', 'Devops Engineer',
   'Site Reliability Engineer', 'Cloud Engineer', 'Machine Learning Engineer',
-  'Applied AI Engineer', 'Applied ML Engineer', 'Software Engineer'
+  'Applied AI Engineer', 'Applied ML Engineer', 'Software Engineer',
+  'Staff Machine Learning Engineer', 'Generative AI',
+  'AI/ML Specialist Solutions Architect', 'Staff Applied AI/ ML Engineer',
+  'Fullstack Engineer', 'Senior Software Engineer',
+  'Forward Deployed Engineer (AI Agent)'
 ];
 
 const CITY_FILTERS = [
