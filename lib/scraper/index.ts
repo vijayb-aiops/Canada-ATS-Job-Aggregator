@@ -1,10 +1,12 @@
 import { ATSParser, JobResult, ScraperOptions } from './types';
 import { greenhouseParser } from './parsers/greenhouse';
 import { leverParser } from './parsers/lever';
+import { ashbyParser } from './parsers/ashby';
 
 const PARSERS: Record<string, ATSParser> = {
   'Greenhouse': greenhouseParser,
   'Lever': leverParser,
+  'Ashby': ashbyParser,
   // Other parsers would be added here
 };
 
