@@ -33,7 +33,14 @@ const JOB_ROLES = [
   'Staff Machine Learning Engineer', 'Generative AI',
   'AI/ML Specialist Solutions Architect', 'Staff Applied AI/ ML Engineer',
   'Fullstack Engineer', 'Senior Software Engineer',
-  'Forward Deployed Engineer (AI Agent)'
+  'Forward Deployed Engineer (AI Agent)',
+  'Staff MLOps Developer', 'AI-First Data Scientist',
+  'Senior Cloud Native Engineer', 'Senior Consultant',
+  'Senior DevOps Engineer', 'Senior Platform Engineer',
+  'Senior Site Reliability Engineer', 'Senior Release Engineer',
+  'Senior Infrastructure Engineer', 'Senior Automation Engineer',
+  'Senior Dojo Coach', 'DevOps Consultant',
+  'Technical Lead', 'Research Engineer- Neural Rendering'
 ];
 
 const CITY_FILTERS = [
@@ -220,7 +227,7 @@ export default function Home() {
                 <Briefcase className="w-5 h-5 text-fuchsia-300" />
                 <h2 className="font-semibold">Job Roles</h2>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 max-h-[260px] overflow-y-auto pr-2 custom-scrollbar">
                 {JOB_ROLES.map(role => (
                   <button
                     key={role}
@@ -360,7 +367,7 @@ export default function Home() {
                   <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
                   <h2 className="font-semibold">Cities</h2>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                   {CITY_FILTERS.map(city => (
                     <button
                       key={city}
@@ -384,7 +391,7 @@ export default function Home() {
                   <div className="w-2 h-2 rounded-full bg-amber-400"></div>
                   <h2 className="font-semibold">Job Type</h2>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
                   {JOB_TYPE_FILTERS.map(type => (
                     <button
                       key={type}
