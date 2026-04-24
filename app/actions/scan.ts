@@ -23,7 +23,9 @@ export async function startScan(
     .select()
     .single();
 
-  if (scanError) throw new Error(scanError.message);
+  if (scanError) {
+    throw new Error(`Failed to create scan record: ${scanError.message}`);
+  }
 
   try {
     // 2. Run scraper
@@ -46,17 +48,23 @@ export async function startScan(
         .from('jobs')
         .insert(jobsToInsert);
 
-      if (jobsError) throw new Error(jobsError.message);
+      if (jobsError) {
+        throw new Error(`Failed to save jobs: ${jobsError.message}`);
+      }
     }
 
     // 4. Update scan status
-    await supabase
+    const { error: updateError } = await supabase
       .from('scans')
       .update({
         status: 'completed',
         total_found: results.length
       })
       .eq('id', scan.id);
+
+    if (updateError) {
+      throw new Error(`Failed to mark scan as completed: ${updateError.message}`);
+    }
 
     return { success: true, scanId: scan.id, count: results.length };
   } catch (error: any) {
@@ -68,6 +76,6 @@ export async function startScan(
       })
       .eq('id', scan.id);
 
-    throw error;
+    throw new Error(error?.message || 'Scan failed unexpectedly.');
   }
 }

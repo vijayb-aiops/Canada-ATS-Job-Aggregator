@@ -120,7 +120,8 @@ export default function Home() {
       setScanComplete(true);
     } catch (error) {
       console.error('Scan failed:', error);
-      alert('Scan failed. Please try again.');
+      const message = error instanceof Error ? error.message : 'Scan failed. Please try again.';
+      alert(message);
     } finally {
       setIsScanning(false);
     }
