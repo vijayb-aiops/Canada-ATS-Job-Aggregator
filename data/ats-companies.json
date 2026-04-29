@@ -248,5 +248,24 @@
     "vanta",
     "clickup",
     "ens-labs"
-  ]
+  ],
+  "workday": [
+    {
+      "name": "Workday",
+      "host": "workday.wd5.myworkdayjobs.com",
+      "tenant": "workday",
+      "site": "Workday"
+    }
+  ],
+  "smartrecruiters": [
+    {
+      "id": "smartrecruiters",
+      "name": "SmartRecruiters"
+    }
+  ],
+  "bamboohr": [],
+  "icims": [],
+  "jobvite": [],
+  "adp": [],
+  "successfactors": []
 }

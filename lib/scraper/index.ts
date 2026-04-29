@@ -2,12 +2,25 @@ import { ATSParser, JobResult, ScraperOptions } from './types';
 import { greenhouseParser } from './parsers/greenhouse';
 import { leverParser } from './parsers/lever';
 import { ashbyParser } from './parsers/ashby';
+import { workdayParser } from './parsers/workday';
+import { smartRecruitersParser } from './parsers/smartrecruiters';
+import { bambooHrParser } from './parsers/bamboohr';
+import { icimsParser } from './parsers/icims';
+import { jobviteParser } from './parsers/jobvite';
+import { adpParser } from './parsers/adp';
+import { successFactorsParser } from './parsers/successfactors';
 
 const PARSERS: Record<string, ATSParser> = {
   'Greenhouse': greenhouseParser,
   'Lever': leverParser,
   'Ashby': ashbyParser,
-  // Other parsers would be added here
+  'Workday': workdayParser,
+  'SmartRecruiters': smartRecruitersParser,
+  'BambooHR': bambooHrParser,
+  'iCIMS': icimsParser,
+  'Jobvite': jobviteParser,
+  'ADP Workforce Now': adpParser,
+  'SAP SuccessFactors': successFactorsParser
 };
 
 export async function runScraper(
@@ -35,23 +48,9 @@ export async function runScraper(
         console.error(`Scraper failed for ${atsName}:`, error);
       }
     } else {
-      // Fallback/Mock for ATS systems not yet fully implemented
-      console.warn(`Parser for ${atsName} not implemented, using mock data.`);
-      allResults.push(...generateMockResults(atsName, roles));
+      console.warn(`Parser for ${atsName} is not implemented. Skipping.`);
     }
   }
 
   return allResults;
-}
-
-function generateMockResults(ats: string, roles: string[]): JobResult[] {
-  // This ensures the UI shows results even for unimplemented parsers during development
-  return roles.slice(0, 2).map(role => ({
-    ats_system: ats,
-    company: `${ats} Partner Co`,
-    position: `${role}`,
-    link: 'https://example.com/job',
-    location: 'Toronto, ON (Remote)',
-    job_type: 'Full-time'
-  }));
 }
