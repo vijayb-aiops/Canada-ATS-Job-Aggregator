@@ -2,6 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { runScraper } from '@/lib/scraper';
+import { type JobResult } from '@/lib/scraper/types';
+
+type ScanResponse = {
+  success: true;
+  scanId: string | null;
+  count: number;
+  jobs: JobResult[];
+  persistenceWarning?: string;
+};
 
 export async function startScan(
   selectedAts: string[],
@@ -9,35 +18,32 @@ export async function startScan(
   selectedCities: string[],
   selectedJobTypes: string[],
   selectedCountries: string[]
-) {
-  const supabase = await createClient();
-
-  // 1. Create scan record
-  const { data: scan, error: scanError } = await supabase
-    .from('scans')
-    .insert({
-      ats_filters: selectedAts,
-      role_filters: selectedRoles,
-      status: 'processing'
-    })
-    .select()
-    .single();
-
-  if (scanError) {
-    throw new Error(`Failed to create scan record: ${scanError.message}`);
-  }
+): Promise<ScanResponse> {
+  const results = await runScraper(
+    selectedAts,
+    selectedRoles,
+    selectedCities,
+    selectedJobTypes,
+    selectedCountries
+  );
 
   try {
-    // 2. Run scraper
-    const results = await runScraper(
-      selectedAts,
-      selectedRoles,
-      selectedCities,
-      selectedJobTypes,
-      selectedCountries
-    );
+    const supabase = await createClient();
 
-    // 3. Save jobs
+    const { data: scan, error: scanError } = await supabase
+      .from('scans')
+      .insert({
+        ats_filters: selectedAts,
+        role_filters: selectedRoles,
+        status: 'processing'
+      })
+      .select()
+      .single();
+
+    if (scanError) {
+      throw new Error(`Failed to create scan record: ${scanError.message}`);
+    }
+
     if (results.length > 0) {
       const jobsToInsert = results.map(job => ({
         ...job,
@@ -53,7 +59,6 @@ export async function startScan(
       }
     }
 
-    // 4. Update scan status
     const { error: updateError } = await supabase
       .from('scans')
       .update({
@@ -66,16 +71,17 @@ export async function startScan(
       throw new Error(`Failed to mark scan as completed: ${updateError.message}`);
     }
 
-    return { success: true, scanId: scan.id, count: results.length };
+    return { success: true, scanId: scan.id, count: results.length, jobs: results };
   } catch (error: any) {
-    await supabase
-      .from('scans')
-      .update({
-        status: 'failed',
-        error_message: error.message
-      })
-      .eq('id', scan.id);
+    const message = error?.message || 'Unable to save scan results.';
+    console.error('Scan persistence failed:', error);
 
-    throw new Error(error?.message || 'Scan failed unexpectedly.');
+    return {
+      success: true,
+      scanId: null,
+      count: results.length,
+      jobs: results,
+      persistenceWarning: message
+    };
   }
 }

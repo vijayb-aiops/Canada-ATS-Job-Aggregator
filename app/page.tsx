@@ -14,7 +14,8 @@ import {
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { startScan } from '@/app/actions/scan';
-import { exportScanToExcel } from '@/app/actions/export';
+import { exportJobsToExcel, exportScanToExcel } from '@/app/actions/export';
+import { type JobResult } from '@/lib/scraper/types';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -67,6 +68,7 @@ export default function Home() {
   const [scanComplete, setScanComplete] = useState(false);
   const [resultsCount, setResultsCount] = useState(0);
   const [scanId, setScanId] = useState<string | null>(null);
+  const [scanResults, setScanResults] = useState<JobResult[]>([]);
   const [isExporting, setIsExporting] = useState(false);
 
   const toggleAts = (ats: string) => {
@@ -117,7 +119,11 @@ export default function Home() {
       setProgress(100);
       setResultsCount(result.count);
       setScanId(result.scanId);
+      setScanResults(result.jobs);
       setScanComplete(true);
+      if (result.persistenceWarning) {
+        console.warn('Scan results were not saved:', result.persistenceWarning);
+      }
     } catch (error) {
       console.error('Scan failed:', error);
       const message = error instanceof Error ? error.message : 'Scan failed. Please try again.';
@@ -128,11 +134,13 @@ export default function Home() {
   };
 
   const handleDownload = async () => {
-    if (!scanId) return;
+    if (!scanId && scanResults.length === 0) return;
     
     setIsExporting(true);
     try {
-      const base64 = await exportScanToExcel(scanId);
+      const base64 = scanId
+        ? await exportScanToExcel(scanId)
+        : await exportJobsToExcel(scanResults);
       
       // Create a download link on the client
       const byteCharacters = atob(base64);
@@ -328,6 +336,7 @@ export default function Home() {
                       onClick={() => {
                         setScanComplete(false);
                         setScanId(null);
+                        setScanResults([]);
                       }}
                       className="text-sm text-slate-400 hover:text-slate-200 font-medium"
                     >
